@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  name          String
+  passwordHash  String        @map("password_hash")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  
+  habits        Habit[]
+  sleepLogs     SleepLog[]
+  workoutLogs   WorkoutLog[]
+  moodLogs      MoodLog[]
+  expenses      Expense[]
+
+  @@map("users")
+}
+
+model Habit {
+  id          String      @id @default(uuid())
+  userId      String      @map("user_id")
+  name        String
+  description String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs        HabitLog[]
+
+  @@map("habits")
+}
+
+model HabitLog {
+  id        String    @id @default(uuid())
+  habitId   String    @map("habit_id")
+  date      DateTime  @db.Date
+  completed Boolean   @default(false)
+  createdAt DateTime  @default(now()) @map("created_at")
+  
+  habit     Habit     @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+  @@map("habit_logs")
+}
+
+model SleepLog {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  sleepTime DateTime  @map("sleep_time")
+  wakeTime  DateTime  @map("wake_time")
+  quality   Int       // 1-5 scale
+  notes     String?
+  date      DateTime  @db.Date
+  createdAt DateTime  @default(now()) @map("created_at")
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("sleep_logs")
+}
+
+model WorkoutLog {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  type      String    // Cardio, Strength, Yoga, etc.
+  duration  Int       // minutes
+  calories  Int?
+  notes     String?
+  date      DateTime  @db.Date
+  createdAt DateTime  @default(now()) @map("created_at")
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("workout_logs")
+}
+
+model MoodLog {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  mood      Int       // 1-5 scale
+  notes     String?
+  date      DateTime  @db.Date
+  createdAt DateTime  @default(now()) @map("created_at")
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("mood_logs")
+}
+
+model Expense {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  amount      Float
+  category    String    // Food, Rent, Transportation, etc.
+  description String?
+  date        DateTime  @db.Date
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("expenses")
+}

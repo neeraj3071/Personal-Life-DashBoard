@@ -1,0 +1,608 @@
+{
+  "info": {
+    "name": "Life Dashboard API - Final",
+    "_postman_id": "life-dashboard-final-v1",
+    "description": "Complete Life Dashboard API collection with correct request bodies and auto token chaining.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:3001/api",
+      "type": "string"
+    },
+    {
+      "key": "TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "HABIT_ID",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"API is running\", () => pm.expect(pm.response.json().status).to.eql(\"ok\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/health",
+              "host": ["{{BASE_URL}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Register 201 or 400 (already exists)\", () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Neeraj Saini\",\n  \"email\": \"test123@gmail.com\",\n  \"password\": \"Demo@123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/register",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Token received and saved\", () => {",
+                  "  const token = pm.response.json().data.token;",
+                  "  pm.expect(token).to.be.a(\"string\").and.not.empty;",
+                  "  pm.collectionVariables.set(\"TOKEN\", token);",
+                  "  console.log(\"TOKEN saved:\", token.substring(0, 30) + \"...\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test123@gmail.com\",\n  \"password\": \"Demo@123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/login",
+              "host": ["{{BASE_URL}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Habits",
+      "item": [
+        {
+          "name": "Create Habit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Create Habit 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Habit ID saved\", () => {",
+                  "  const id = pm.response.json().data.id;",
+                  "  pm.expect(id).to.be.a(\"string\");",
+                  "  pm.collectionVariables.set(\"HABIT_ID\", id);",
+                  "  console.log(\"HABIT_ID saved:\", id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Morning Run\",\n  \"description\": \"30 min jog every morning\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/habits",
+              "host": ["{{BASE_URL}}"],
+              "path": ["habits"]
+            }
+          }
+        },
+        {
+          "name": "Get All Habits",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Habits 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Returns array\", () => pm.expect(pm.response.json().data).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/habits",
+              "host": ["{{BASE_URL}}"],
+              "path": ["habits"]
+            }
+          }
+        },
+        {
+          "name": "Log Habit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Log Habit 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Success true\", () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitId\": \"{{HABIT_ID}}\",\n  \"date\": \"2026-03-10\",\n  \"completed\": true\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/habits/log",
+              "host": ["{{BASE_URL}}"],
+              "path": ["habits", "log"]
+            }
+          }
+        },
+        {
+          "name": "Get Habit Logs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Habit Logs 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Returns array\", () => pm.expect(pm.response.json().data).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/habits/{{HABIT_ID}}/logs",
+              "host": ["{{BASE_URL}}"],
+              "path": ["habits", "{{HABIT_ID}}", "logs"]
+            }
+          }
+        },
+        {
+          "name": "Delete Habit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Delete Habit 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Success true\", () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/habits/{{HABIT_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["habits", "{{HABIT_ID}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sleep",
+      "item": [
+        {
+          "name": "Log Sleep",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Log Sleep 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Success true\", () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sleepTime\": \"2026-03-09T23:00:00.000Z\",\n  \"wakeTime\": \"2026-03-10T07:00:00.000Z\",\n  \"quality\": 4,\n  \"date\": \"2026-03-10\",\n  \"notes\": \"Slept well\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/sleep",
+              "host": ["{{BASE_URL}}"],
+              "path": ["sleep"]
+            }
+          }
+        },
+        {
+          "name": "Get Sleep Logs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Sleep 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Returns array\", () => pm.expect(pm.response.json().data).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/sleep",
+              "host": ["{{BASE_URL}}"],
+              "path": ["sleep"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mood",
+      "item": [
+        {
+          "name": "Log Mood",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Log Mood 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Success true\", () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mood\": 4,\n  \"date\": \"2026-03-10\",\n  \"notes\": \"Feeling great today\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/mood",
+              "host": ["{{BASE_URL}}"],
+              "path": ["mood"]
+            }
+          }
+        },
+        {
+          "name": "Get Mood Logs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Moods 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Returns array\", () => pm.expect(pm.response.json().data).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/mood",
+              "host": ["{{BASE_URL}}"],
+              "path": ["mood"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Workouts",
+      "item": [
+        {
+          "name": "Log Workout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Log Workout 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Success true\", () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Running\",\n  \"duration\": 30,\n  \"date\": \"2026-03-10\",\n  \"calories\": 300,\n  \"notes\": \"Morning run\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/workouts",
+              "host": ["{{BASE_URL}}"],
+              "path": ["workouts"]
+            }
+          }
+        },
+        {
+          "name": "Get Workouts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Workouts 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Returns array\", () => pm.expect(pm.response.json().data).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/workouts",
+              "host": ["{{BASE_URL}}"],
+              "path": ["workouts"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Expenses",
+      "item": [
+        {
+          "name": "Log Expense",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Log Expense 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Success true\", () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 25.50,\n  \"category\": \"food\",\n  \"date\": \"2026-03-10\",\n  \"description\": \"Lunch\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/expenses",
+              "host": ["{{BASE_URL}}"],
+              "path": ["expenses"]
+            }
+          }
+        },
+        {
+          "name": "Get Expenses",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Expenses 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Returns array\", () => pm.expect(pm.response.json().data).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/expenses",
+              "host": ["{{BASE_URL}}"],
+              "path": ["expenses"]
+            }
+          }
+        },
+        {
+          "name": "Get Category Totals",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Category Totals 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Success true\", () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/expenses/category-totals",
+              "host": ["{{BASE_URL}}"],
+              "path": ["expenses", "category-totals"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Stats",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Stats 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Success true\", () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/dashboard/stats",
+              "host": ["{{BASE_URL}}"],
+              "path": ["dashboard", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Insights",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Insights 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Success true\", () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/dashboard/insights",
+              "host": ["{{BASE_URL}}"],
+              "path": ["dashboard", "insights"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiClient } from '@/lib/api-client'
+import type { AuthResponse } from '@/types'
 
 interface User {
   id: string
@@ -22,55 +23,63 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [bootstrapAuth] = useState(() => {
+    if (typeof window === 'undefined') {
+      return { user: null as User | null, token: null as string | null }
+    }
+
+    const storedToken = localStorage.getItem('token')
+    const storedUser = localStorage.getItem('user')
+
+    if (!storedToken || !storedUser) {
+      return { user: null as User | null, token: null as string | null }
+    }
+
+    try {
+      const parsedUser = JSON.parse(storedUser) as User
+      return { user: parsedUser, token: storedToken }
+    } catch {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      return { user: null as User | null, token: null as string | null }
+    }
+  })
+
+  const [user, setUser] = useState<User | null>(bootstrapAuth.user)
+  const [token, setToken] = useState<string | null>(bootstrapAuth.token)
+  const [isLoading] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    // Check for existing token on mount
-    const storedToken = localStorage.getItem('token')
-    const storedUser = localStorage.getItem('user')
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken)
-      setUser(JSON.parse(storedUser))
-      apiClient.setToken(storedToken)
+    if (bootstrapAuth.token) {
+      apiClient.setToken(bootstrapAuth.token)
     }
-    setIsLoading(false)
-  }, [])
+  }, [bootstrapAuth.token])
+
+  const persistAuth = (auth: AuthResponse) => {
+    setUser(auth.user)
+    setToken(auth.token)
+    localStorage.setItem('token', auth.token)
+    localStorage.setItem('user', JSON.stringify(auth.user))
+  }
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await apiClient.login(email, password)
-      const { user, token } = response.data
-      
-      setUser(user)
-      setToken(token)
-      
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
-      
+      const auth = await apiClient.login(email, password)
+      persistAuth(auth)
       router.push('/dashboard')
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Login failed')
+    } catch (error: unknown) {
+      throw new Error(error instanceof Error ? error.message : 'Login failed')
     }
   }
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await apiClient.register(name, email, password)
-      const { user, token } = response.data
-      
-      setUser(user)
-      setToken(token)
-      
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
-      
+      const auth = await apiClient.register(name, email, password)
+      persistAuth(auth)
       router.push('/dashboard')
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Registration failed')
+    } catch (error: unknown) {
+      throw new Error(error instanceof Error ? error.message : 'Registration failed')
     }
   }
 

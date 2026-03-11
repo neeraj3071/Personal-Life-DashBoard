@@ -21,8 +21,10 @@ export interface Habit {
 export interface HabitLog {
   id: string
   habitId: string
+  userId: string
   date: string
   completed: boolean
+  createdAt: string
 }
 
 export interface SleepLog {
@@ -63,12 +65,18 @@ export interface Expense {
 }
 
 export interface DashboardStats {
-  todaySleep?: number
+  todaySleep: number | null
   weeklyWorkouts: number
   habitCompletion: number
-  todayMood?: number
+  todayMood: number | null
+  avgWeeklyMood: number | null
   todaySpending: number
   weeklyProductivity: number
+}
+
+export interface CategoryTotal {
+  category: string
+  total: number
 }
 
 export interface ChartData {

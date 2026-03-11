@@ -1,21 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "700"]
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"]
 });
 
 export const metadata: Metadata = {
-  title: "Life Dashboard - Track Your Life as Data",
-  description: "Personal analytics platform for tracking sleep, workouts, habits, mood, and finances",
+  title: "Life Dashboard | Personal Performance Cockpit",
+  description: "A modern personal analytics cockpit to track sleep, workouts, habits, mood, and spending in one immersive view.",
 };
 
 export default function RootLayout({
@@ -26,12 +30,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${spaceGrotesk.variable} ${manrope.variable} antialiased`}
       >
         <AuthProvider>
           {children}
         </AuthProvider>
-      </body>
       </body>
     </html>
   );

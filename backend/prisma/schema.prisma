@@ -23,8 +23,27 @@ model User {
   workoutLogs   WorkoutLog[]
   moodLogs      MoodLog[]
   expenses      Expense[]
+  analyticsSettings AnalyticsSettings?
 
   @@map("users")
+}
+
+model AnalyticsSettings {
+  id                String    @id @default(uuid())
+  userId            String    @unique @map("user_id")
+  sleepHours        Float     @default(7) @map("sleep_hours")
+  workoutSessions   Int       @default(4) @map("workout_sessions")
+  workoutMinutes    Int       @default(45) @map("workout_minutes")
+  weeklySpending    Float     @default(250) @map("weekly_spending")
+  habitCompletion   Int       @default(80) @map("habit_completion")
+  mood              Int       @default(4)
+  predictionModel   String?   @map("prediction_model")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("analytics_settings")
 }
 
 model Habit {

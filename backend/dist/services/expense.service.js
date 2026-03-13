@@ -35,12 +35,19 @@ class ExpenseService {
         const expenses = await this.getExpenses(userId, startDate, endDate);
         const totals = {};
         expenses.forEach((expense) => {
-            totals[expense.category] = (totals[expense.category] || 0) + expense.amount;
+            const rawCategory = (expense.category || 'Other').trim();
+            const normalizedCategory = rawCategory.toLowerCase();
+            const displayCategory = rawCategory.charAt(0).toUpperCase() + rawCategory.slice(1).toLowerCase();
+            const amount = Number.isFinite(expense.amount) ? expense.amount : 0;
+            if (!totals[normalizedCategory]) {
+                totals[normalizedCategory] = {
+                    category: displayCategory,
+                    total: 0
+                };
+            }
+            totals[normalizedCategory].total += amount;
         });
-        return Object.entries(totals).map(([category, amount]) => ({
-            category,
-            amount
-        }));
+        return Object.values(totals).sort((left, right) => right.total - left.total);
     }
 }
 exports.ExpenseService = ExpenseService;

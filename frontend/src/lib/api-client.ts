@@ -1,14 +1,18 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import { API_BASE_URL } from './constants'
 import type {
+  AnalyticsSettings,
   AuthResponse,
   CategoryTotal,
+  DashboardPerformance,
   DashboardStats,
   Expense,
   Habit,
   HabitLog,
   MoodLog,
   SleepLog,
+  TimelineRange,
+  TimelineReplay,
   WorkoutLog
 } from '@/types'
 
@@ -268,6 +272,28 @@ class ApiClient {
 
   async getDashboardInsights(): Promise<string[]> {
     const response = await this.client.get<ApiEnvelope<string[]>>('/dashboard/insights')
+    return this.unwrap(response)
+  }
+
+  async getDashboardSettings(): Promise<AnalyticsSettings> {
+    const response = await this.client.get<ApiEnvelope<AnalyticsSettings>>('/dashboard/settings')
+    return this.unwrap(response)
+  }
+
+  async updateDashboardSettings(payload: Omit<AnalyticsSettings, 'predictionProvider' | 'predictionModel'>): Promise<AnalyticsSettings> {
+    const response = await this.client.put<ApiEnvelope<AnalyticsSettings>>('/dashboard/settings', payload)
+    return this.unwrap(response)
+  }
+
+  async getDashboardPerformance(): Promise<DashboardPerformance> {
+    const response = await this.client.get<ApiEnvelope<DashboardPerformance>>('/dashboard/performance')
+    return this.unwrap(response)
+  }
+
+  async getDashboardTimeline(params?: { range?: TimelineRange; date?: string }): Promise<TimelineReplay> {
+    const response = await this.client.get<ApiEnvelope<TimelineReplay>>('/dashboard/timeline', {
+      params
+    })
     return this.unwrap(response)
   }
 }

@@ -7,7 +7,7 @@ import PageContainer from '@/components/PageContainer'
 import TiltCard from '@/components/TiltCard'
 import { apiClient } from '@/lib/api-client'
 import { EXPENSE_CATEGORIES } from '@/lib/constants'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, getLocalDateInputValue } from '@/lib/utils'
 import type { CategoryTotal, Expense } from '@/types'
 import { RefreshCw, Wallet } from 'lucide-react'
 
@@ -21,7 +21,7 @@ interface ExpenseFormState {
 const initialForm: ExpenseFormState = {
   amount: '',
   category: EXPENSE_CATEGORIES[0],
-  date: new Date().toISOString().split('T')[0],
+  date: getLocalDateInputValue(),
   description: ''
 }
 

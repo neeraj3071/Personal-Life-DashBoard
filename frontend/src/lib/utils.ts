@@ -27,6 +27,11 @@ export function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
+export function getLocalDateInputValue(date: Date = new Date()): string {
+  const timezoneOffsetMs = date.getTimezoneOffset() * 60 * 1000
+  return new Date(date.getTime() - timezoneOffsetMs).toISOString().split('T')[0]
+}
+
 export function calculateDuration(start: Date | string, end: Date | string): number {
   const startTime = new Date(start).getTime()
   const endTime = new Date(end).getTime()

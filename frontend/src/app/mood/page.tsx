@@ -7,7 +7,7 @@ import PageContainer from '@/components/PageContainer'
 import TiltCard from '@/components/TiltCard'
 import { apiClient } from '@/lib/api-client'
 import { MOOD_SCALE } from '@/lib/constants'
-import { formatDate } from '@/lib/utils'
+import { formatDate, getLocalDateInputValue } from '@/lib/utils'
 import type { MoodLog } from '@/types'
 import { RefreshCw, Smile } from 'lucide-react'
 
@@ -19,7 +19,7 @@ interface MoodFormState {
 
 const initialForm: MoodFormState = {
   mood: '4',
-  date: new Date().toISOString().split('T')[0],
+  date: getLocalDateInputValue(),
   notes: ''
 }
 

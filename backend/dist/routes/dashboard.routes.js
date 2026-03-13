@@ -10,4 +10,8 @@ const router = (0, express_1.Router)();
 router.use(auth_middleware_1.authMiddleware);
 router.get('/stats', dashboard_controller_1.default.getStats.bind(dashboard_controller_1.default));
 router.get('/insights', dashboard_controller_1.default.getInsights.bind(dashboard_controller_1.default));
+router.get('/settings', dashboard_controller_1.default.getSettings.bind(dashboard_controller_1.default));
+router.put('/settings', dashboard_controller_1.default.updateSettings.bind(dashboard_controller_1.default));
+router.get('/performance', dashboard_controller_1.default.getPerformance.bind(dashboard_controller_1.default));
+router.get('/timeline', dashboard_controller_1.default.getTimeline.bind(dashboard_controller_1.default));
 exports.default = router;

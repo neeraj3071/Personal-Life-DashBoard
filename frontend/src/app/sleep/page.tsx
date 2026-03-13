@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import PageContainer from '@/components/PageContainer'
 import TiltCard from '@/components/TiltCard'
 import { apiClient } from '@/lib/api-client'
-import { formatDate } from '@/lib/utils'
+import { formatDate, getLocalDateInputValue } from '@/lib/utils'
 import type { SleepLog } from '@/types'
 import { Moon, RefreshCw } from 'lucide-react'
 
@@ -19,14 +19,26 @@ interface SleepFormState {
 }
 
 const initialForm: SleepFormState = {
-  date: new Date().toISOString().split('T')[0],
+  date: getLocalDateInputValue(),
   sleepTime: '23:00',
   wakeTime: '07:00',
   quality: '4',
   notes: ''
 }
 
-const buildISODateTime = (date: string, time: string) => new Date(`${date}T${time}:00`).toISOString()
+const buildSleepWindow = (date: string, sleepTime: string, wakeTime: string) => {
+  const sleepDateTime = new Date(`${date}T${sleepTime}:00`)
+  const wakeDateTime = new Date(`${date}T${wakeTime}:00`)
+
+  if (wakeDateTime <= sleepDateTime) {
+    wakeDateTime.setDate(wakeDateTime.getDate() + 1)
+  }
+
+  return {
+    sleepTime: sleepDateTime.toISOString(),
+    wakeTime: wakeDateTime.toISOString()
+  }
+}
 
 export default function SleepPage() {
   const [form, setForm] = useState<SleepFormState>(initialForm)
@@ -66,10 +78,12 @@ export default function SleepPage() {
     setError('')
 
     try {
+      const sleepWindow = buildSleepWindow(form.date, form.sleepTime, form.wakeTime)
+
       await apiClient.createSleepLog({
         date: form.date,
-        sleepTime: buildISODateTime(form.date, form.sleepTime),
-        wakeTime: buildISODateTime(form.date, form.wakeTime),
+        sleepTime: sleepWindow.sleepTime,
+        wakeTime: sleepWindow.wakeTime,
         quality: Number(form.quality),
         notes: form.notes.trim() || undefined
       })

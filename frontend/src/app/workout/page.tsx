@@ -7,7 +7,7 @@ import PageContainer from '@/components/PageContainer'
 import TiltCard from '@/components/TiltCard'
 import { apiClient } from '@/lib/api-client'
 import { WORKOUT_TYPES } from '@/lib/constants'
-import { formatDate } from '@/lib/utils'
+import { formatDate, getLocalDateInputValue } from '@/lib/utils'
 import type { WorkoutLog } from '@/types'
 import { Dumbbell, RefreshCw } from 'lucide-react'
 
@@ -22,7 +22,7 @@ interface WorkoutFormState {
 const initialForm: WorkoutFormState = {
   type: WORKOUT_TYPES[0],
   duration: '30',
-  date: new Date().toISOString().split('T')[0],
+  date: getLocalDateInputValue(),
   calories: '',
   notes: ''
 }

@@ -253,19 +253,13 @@ export class DashboardService {
   }
 
   private async getOrCreateSettingsRecord(userId: string): Promise<AnalyticsSettings> {
-    const existing = await prisma.analyticsSettings.findUnique({
-      where: { userId }
-    })
-
-    if (existing) {
-      return existing
-    }
-
-    return prisma.analyticsSettings.create({
-      data: {
+    return prisma.analyticsSettings.upsert({
+      where: { userId },
+      create: {
         userId,
         predictionModel: process.env.GEMINI_MODEL || 'gemini-2.0-flash'
-      }
+      },
+      update: {}
     })
   }
 

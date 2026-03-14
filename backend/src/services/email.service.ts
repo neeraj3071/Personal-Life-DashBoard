@@ -1,4 +1,5 @@
 import nodemailer, { Transporter } from 'nodemailer'
+import SMTPTransport from 'nodemailer/lib/smtp-transport'
 import { AppError } from '../middleware/error.middleware'
 
 interface SendEmailInput {
@@ -21,13 +22,17 @@ class EmailService {
     }
 
     if (!this.transporter) {
-      this.transporter = nodemailer.createTransport({
-        service: 'gmail',
+      const smtpOptions: SMTPTransport.Options & { family: number } = {
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        family: 4,
         auth: {
           user: process.env.GMAIL_USER,
           pass: process.env.GMAIL_APP_PASSWORD
         }
-      })
+      }
+      this.transporter = nodemailer.createTransport(smtpOptions as SMTPTransport.Options)
     }
 
     return this.transporter

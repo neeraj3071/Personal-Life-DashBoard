@@ -116,12 +116,16 @@ class ReminderService {
   }
 
   getReminderConfig() {
+    const emailDiagnostics = emailService.getProviderDiagnostics()
+
     return {
       enabled: process.env.REMINDER_ENABLED === 'true',
       cronList: this.parseCronList(),
       topics: this.parseTopics(),
       timezone: process.env.REMINDER_TIMEZONE || 'UTC',
-      gmailConfigured: emailService.isConfigured()
+      gmailConfigured: emailDiagnostics.smtpConfigured,
+      emailConfigured: emailService.isConfigured(),
+      email: emailDiagnostics
     }
   }
 

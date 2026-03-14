@@ -150,8 +150,13 @@ npm run dev
 | `APP_BASE_URL` | — | Frontend URL used in reminder email links |
 | `GEMINI_API_KEY` | — | Google Gemini API key for AI insights |
 | `GEMINI_MODEL` | — | Model name (default `gemini-2.0-flash`) |
-| `GMAIL_USER` | — | Gmail address for sending reminders |
-| `GMAIL_APP_PASSWORD` | — | Gmail App Password (not your login password) |
+| `EMAIL_PROVIDER` | — | `resend` or `smtp` (auto mode defaults to `resend` if key exists) |
+| `EMAIL_FROM` | — | Optional global sender address (`Name <email@domain>`) |
+| `RESEND_API_KEY` | — | Resend API key (recommended for Render/production) |
+| `RESEND_FROM` | — | Sender address for Resend |
+| `GMAIL_USER` | — | Gmail address for SMTP fallback |
+| `GMAIL_APP_PASSWORD` | — | Gmail App Password for SMTP fallback |
+| `GMAIL_FROM` | — | Sender address when using Gmail SMTP |
 | `REMINDER_ENABLED` | — | `true` to activate the cron scheduler |
 | `REMINDER_CRON_LIST` | — | Semicolon-separated cron expressions |
 | `REMINDER_TOPICS` | — | Comma-separated topic rotation list |
@@ -175,6 +180,7 @@ npm run dev
 3. Set **Build Command**: `npm install && npm run build && npx prisma generate`
 4. Set **Start Command**: `node dist/index.js`
 5. Add all environment variables from the table above.
+    - For reliable reminder delivery on Render, prefer `EMAIL_PROVIDER=resend` with `RESEND_API_KEY` + `RESEND_FROM`.
 6. Run migrations once from your local machine:
    ```bash
    DATABASE_URL="<render-external-db-url>?sslmode=require" npx prisma migrate deploy

@@ -18,7 +18,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Life Dashboard | Personal Performance Cockpit",
+  title: "Daily Orbit | Personal Performance Cockpit",
   description: "A modern personal analytics cockpit to track sleep, workouts, habits, mood, and spending in one immersive view.",
 };
 

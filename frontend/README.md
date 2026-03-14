@@ -20,6 +20,48 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Deploy Daily Orbit (Vercel)
+
+This repository has:
+- `frontend` (Next.js) → deploy on Vercel
+- `backend` (Express + Prisma + cron reminders) → deploy on a long-running backend host (Render/Railway/Fly/VM)
+
+### 1) Deploy backend first
+
+Required backend environment variables (from `backend/.env.example`):
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `FRONTEND_URL` (set to your Vercel frontend URL, for CORS)
+- `APP_BASE_URL` (same Vercel URL, used in reminder email dashboard links)
+- `CORS_ALLOW_VERCEL_PREVIEWS=true` (optional, allows all `*.vercel.app` preview URLs)
+- reminder and Gmail keys if reminders are enabled
+
+Run Prisma migrations in production using:
+
+```bash
+npx prisma migrate deploy
+```
+
+### 2) Deploy frontend on Vercel
+
+When creating/importing the Vercel project:
+- Framework preset: Next.js
+- Root Directory: `frontend`
+
+Set Vercel environment variables:
+- `NEXT_PUBLIC_API_URL=https://<your-backend-domain>/api`
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID=<your_google_client_id>`
+
+### 3) Post-deploy checks
+
+1. Open frontend and register/login.
+2. Confirm browser requests hit your backend domain (not localhost).
+3. Verify backend health endpoint responds:
+
+```bash
+curl https://<your-backend-domain>/api/health
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

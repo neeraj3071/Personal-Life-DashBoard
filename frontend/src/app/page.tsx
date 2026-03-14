@@ -53,7 +53,7 @@ export default function HomePage() {
       <main className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 pb-14 pt-8 md:px-10 md:pt-12">
         <header className="stagger-rise flex items-center justify-between" style={{ animationDelay: '40ms' }}>
           <div className="glass-panel rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700">
-            Life Dashboard
+            Daily Orbit
           </div>
           <Link
             href="/auth/login"

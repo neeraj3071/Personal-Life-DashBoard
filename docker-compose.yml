@@ -1,15 +1,15 @@
-# Life Dashboard - Docker Setup (Optional)
+# Daily Orbit - Docker Setup (Optional)
 
 version: '3.8'
 
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: lifedashboard-db
+    container_name: dailyorbit-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: lifedashboard
+      POSTGRES_DB: dailyorbit
     ports:
       - "5432:5432"
     volumes:
@@ -24,11 +24,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: lifedashboard-backend
+    container_name: dailyorbit-backend
     environment:
       NODE_ENV: development
       PORT: 5000
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/lifedashboard
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/dailyorbit
       JWT_SECRET: dev_secret_key_change_in_production
       JWT_EXPIRES_IN: 7d
       FRONTEND_URL: http://localhost:3000
@@ -46,7 +46,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: lifedashboard-frontend
+    container_name: dailyorbit-frontend
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:5000/api
     ports:

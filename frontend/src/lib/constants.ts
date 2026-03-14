@@ -1,4 +1,10 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_URL
+
+if (process.env.NODE_ENV === 'production' && !configuredApiBaseUrl) {
+  throw new Error('NEXT_PUBLIC_API_URL must be set for production deployments')
+}
+
+export const API_BASE_URL = configuredApiBaseUrl || 'http://localhost:3001/api'
 
 export const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
 

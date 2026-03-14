@@ -425,8 +425,12 @@ function DashboardContent() {
 
           <div className="mt-5 flex items-end gap-5">
             <div>
-              <p className="headline-display text-5xl font-bold text-slate-900">{performance.lifeScore.score}</p>
-              <p className="text-sm text-slate-600">Grade {performance.lifeScore.grade}</p>
+              <p className="headline-display text-5xl font-bold text-slate-900">
+                {performance.lifeScore.grade === '—' ? '—' : performance.lifeScore.score}
+              </p>
+              <p className="text-sm text-slate-600">
+                {performance.lifeScore.grade === '—' ? 'No data logged today' : `Grade ${performance.lifeScore.grade}`}
+              </p>
             </div>
             <div className="data-pill rounded-2xl px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700">
               Updated {new Date(performance.generatedAt).toLocaleTimeString()}
@@ -439,7 +443,7 @@ function DashboardContent() {
                 <div className="mb-1 flex items-center justify-between text-xs text-slate-600">
                   <span className="font-semibold uppercase tracking-[0.1em]">{component.label}</span>
                   <span>
-                    {component.score}/100 • {component.value ?? '—'} {component.unit}
+                    {component.value !== null && component.value !== 0 ? `${component.score}/100` : '—'} • {component.value ?? '—'} {component.value !== null ? component.unit : ''}
                   </span>
                 </div>
                 <div className="h-2 rounded-full bg-white/70">

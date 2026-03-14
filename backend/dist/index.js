@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const node_dns_1 = __importDefault(require("node:dns"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const habit_routes_1 = __importDefault(require("./routes/habit.routes"));
 const sleep_routes_1 = __importDefault(require("./routes/sleep.routes"));
@@ -17,6 +18,7 @@ const reminder_routes_1 = __importDefault(require("./routes/reminder.routes"));
 const error_middleware_1 = require("./middleware/error.middleware");
 const reminder_scheduler_1 = require("./schedulers/reminder.scheduler");
 dotenv_1.default.config();
+node_dns_1.default.setDefaultResultOrder('ipv4first');
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')

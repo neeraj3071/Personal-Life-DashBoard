@@ -223,29 +223,36 @@ class DashboardService {
         };
     }
     calculateDailyLifeScore(aggregate, targets) {
-        const sleepScore = aggregate.sleepHours === null
-            ? 50
-            : aggregate.sleepHours >= targets.sleepHours
+        const hasSleep = aggregate.sleepHours !== null;
+        const hasWorkout = aggregate.workoutMinutes > 0;
+        const hasHabits = aggregate.totalHabits > 0;
+        const hasMood = aggregate.mood !== null;
+        const hasSpending = aggregate.spending > 0;
+        const sleepScore = hasSleep
+            ? aggregate.sleepHours >= targets.sleepHours
                 ? clamp(80 + (aggregate.sleepHours - targets.sleepHours) * 8, 80, 100)
-                : clamp((aggregate.sleepHours / targets.sleepHours) * 80, 0, 80);
-        const workoutScore = aggregate.workoutMinutes === 0
-            ? 35
-            : clamp((aggregate.workoutMinutes / targets.workoutMinutes) * 100, 35, 100);
-        const habitCompletionPercent = aggregate.totalHabits > 0
+                : clamp((aggregate.sleepHours / targets.sleepHours) * 80, 0, 80)
+            : null;
+        const workoutScore = hasWorkout
+            ? clamp((aggregate.workoutMinutes / targets.workoutMinutes) * 100, 0, 100)
+            : null;
+        const habitCompletionPercent = hasHabits
             ? (aggregate.completedHabits / aggregate.totalHabits) * 100
-            : 70;
-        const habitScore = clamp(habitCompletionPercent, 0, 100);
-        const moodScore = aggregate.mood === null ? 50 : clamp((aggregate.mood / 5) * 100, 0, 100);
+            : null;
+        const habitScore = habitCompletionPercent !== null ? clamp(habitCompletionPercent, 0, 100) : null;
+        const moodScore = hasMood ? clamp((aggregate.mood / 5) * 100, 0, 100) : null;
         const dailyBudget = targets.weeklySpending / 7;
-        const spendingRatio = dailyBudget > 0 ? aggregate.spending / dailyBudget : 1;
-        const spendingScore = spendingRatio <= 1
-            ? clamp(100 - spendingRatio * 25, 75, 100)
-            : clamp(75 - (spendingRatio - 1) * 75, 0, 75);
+        const spendingRatio = dailyBudget > 0 ? aggregate.spending / dailyBudget : 0;
+        const spendingScore = hasSpending
+            ? spendingRatio <= 1
+                ? clamp(100 - spendingRatio * 25, 75, 100)
+                : clamp(75 - (spendingRatio - 1) * 75, 0, 75)
+            : null;
         const components = [
             {
                 key: 'sleep',
                 label: 'Sleep',
-                score: Math.round(sleepScore),
+                score: sleepScore !== null ? Math.round(sleepScore) : 0,
                 value: aggregate.sleepHours,
                 target: targets.sleepHours,
                 unit: 'hours',
@@ -254,7 +261,7 @@ class DashboardService {
             {
                 key: 'workout',
                 label: 'Workout',
-                score: Math.round(workoutScore),
+                score: workoutScore !== null ? Math.round(workoutScore) : 0,
                 value: aggregate.workoutMinutes,
                 target: targets.workoutMinutes,
                 unit: 'minutes',
@@ -263,8 +270,8 @@ class DashboardService {
             {
                 key: 'habit',
                 label: 'Habits',
-                score: Math.round(habitScore),
-                value: habitCompletionPercent,
+                score: habitScore !== null ? Math.round(habitScore) : 0,
+                value: habitCompletionPercent !== null ? round1(habitCompletionPercent) : null,
                 target: targets.habitCompletion,
                 unit: '%',
                 weight: 0.25
@@ -272,7 +279,7 @@ class DashboardService {
             {
                 key: 'mood',
                 label: 'Mood',
-                score: Math.round(moodScore),
+                score: moodScore !== null ? Math.round(moodScore) : 0,
                 value: aggregate.mood,
                 target: targets.mood,
                 unit: '/5',
@@ -281,14 +288,37 @@ class DashboardService {
             {
                 key: 'spending',
                 label: 'Spending Discipline',
-                score: Math.round(spendingScore),
+                score: spendingScore !== null ? Math.round(spendingScore) : 0,
                 value: round1(aggregate.spending),
                 target: round1(dailyBudget),
                 unit: 'USD/day',
                 weight: 0.1
             }
         ];
-        const score = Math.round(components.reduce((sum, component) => sum + component.score * component.weight, 0));
+        // Only include components that have actual data in the weighted average
+        const activeComponents = components.filter((c) => {
+            if (c.key === 'sleep')
+                return hasSleep;
+            if (c.key === 'workout')
+                return hasWorkout;
+            if (c.key === 'habit')
+                return hasHabits;
+            if (c.key === 'mood')
+                return hasMood;
+            if (c.key === 'spending')
+                return hasSpending;
+            return false;
+        });
+        if (activeComponents.length === 0) {
+            return {
+                date: aggregate.dateKey,
+                score: 0,
+                grade: '—',
+                components
+            };
+        }
+        const totalWeight = activeComponents.reduce((sum, c) => sum + c.weight, 0);
+        const score = Math.round(activeComponents.reduce((sum, c) => sum + c.score * c.weight, 0) / totalWeight);
         const grade = score >= 90
             ? 'A+'
             : score >= 80

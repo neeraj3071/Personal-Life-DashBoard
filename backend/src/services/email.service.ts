@@ -1,5 +1,6 @@
 import nodemailer, { Transporter } from 'nodemailer'
 import SMTPTransport from 'nodemailer/lib/smtp-transport'
+import dns from 'node:dns'
 import { AppError } from '../middleware/error.middleware'
 
 interface SendEmailInput {
@@ -10,63 +11,73 @@ interface SendEmailInput {
 }
 
 class EmailService {
-  private transporters: Array<{ label: string; client: Transporter }> | null = null
-
   isConfigured(): boolean {
     return Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD)
   }
 
-  private getTransporters(): Array<{ label: string; client: Transporter }> {
+  private async resolveSmtpHosts(): Promise<string[]> {
+    try {
+      const addresses = await dns.promises.lookup('smtp.gmail.com', { family: 4, all: true })
+      const uniqueAddresses = Array.from(new Set(addresses.map((item) => item.address).filter(Boolean)))
+
+      if (uniqueAddresses.length > 0) {
+        return uniqueAddresses
+      }
+    } catch {
+      // fall through to hostname fallback
+    }
+
+    return ['smtp.gmail.com']
+  }
+
+  private createTransporter(host: string, port: number, secure: boolean): Transporter {
+    const smtpOptions: SMTPTransport.Options = {
+      host,
+      port,
+      secure,
+      connectionTimeout: 12000,
+      greetingTimeout: 12000,
+      socketTimeout: 20000,
+      tls: {
+        servername: 'smtp.gmail.com'
+      },
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+      }
+    }
+
+    return nodemailer.createTransport(smtpOptions)
+  }
+
+  private async getTransporters(): Promise<Array<{ label: string; client: Transporter }>> {
     if (!this.isConfigured()) {
       throw new AppError('Gmail is not configured. Please set GMAIL_USER and GMAIL_APP_PASSWORD.', 500)
     }
 
-    if (!this.transporters) {
-      const candidateOptions: Array<{ label: string; options: SMTPTransport.Options }> = [
-        {
-          label: 'smtp.gmail.com:587',
-          options: {
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            connectionTimeout: 15000,
-            greetingTimeout: 15000,
-            socketTimeout: 30000,
-            auth: {
-              user: process.env.GMAIL_USER,
-              pass: process.env.GMAIL_APP_PASSWORD
-            }
-          }
-        },
-        {
-          label: 'smtp.gmail.com:465',
-          options: {
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            connectionTimeout: 15000,
-            greetingTimeout: 15000,
-            socketTimeout: 30000,
-            auth: {
-              user: process.env.GMAIL_USER,
-              pass: process.env.GMAIL_APP_PASSWORD
-            }
-          }
-        }
-      ]
+    const hosts = await this.resolveSmtpHosts()
+    const selectedHosts = hosts.slice(0, 3)
 
-      this.transporters = candidateOptions.map((candidate) => ({
-        label: candidate.label,
-        client: nodemailer.createTransport(candidate.options)
-      }))
+    const transporters: Array<{ label: string; client: Transporter }> = []
+
+    for (const host of selectedHosts) {
+      transporters.push({
+        label: `${host}:587`,
+        client: this.createTransporter(host, 587, false)
+      })
+
+      transporters.push({
+        label: `${host}:465`,
+        client: this.createTransporter(host, 465, true)
+      })
     }
 
-    return this.transporters
+    return transporters
   }
 
   async sendEmail({ to, subject, html, text }: SendEmailInput): Promise<void> {
     const from = process.env.GMAIL_FROM || `Daily Orbit <${process.env.GMAIL_USER}>`
-    const transporters = this.getTransporters()
+    const transporters = await this.getTransporters()
     const errors: string[] = []
 
     for (const transporter of transporters) {

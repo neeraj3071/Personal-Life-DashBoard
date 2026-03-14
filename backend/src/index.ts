@@ -1,6 +1,7 @@
 import express, { Application } from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import dns from 'node:dns'
 import authRoutes from './routes/auth.routes'
 import habitRoutes from './routes/habit.routes'
 import sleepRoutes from './routes/sleep.routes'
@@ -13,6 +14,8 @@ import { errorHandler } from './middleware/error.middleware'
 import { startReminderScheduler } from './schedulers/reminder.scheduler'
 
 dotenv.config()
+
+dns.setDefaultResultOrder('ipv4first')
 
 const app: Application = express()
 const PORT = process.env.PORT || 5000

@@ -17,13 +17,17 @@ class EmailService {
             throw new error_middleware_1.AppError('Gmail is not configured. Please set GMAIL_USER and GMAIL_APP_PASSWORD.', 500);
         }
         if (!this.transporter) {
-            this.transporter = nodemailer_1.default.createTransport({
-                service: 'gmail',
+            const smtpOptions = {
+                host: 'smtp.gmail.com',
+                port: 587,
+                secure: false,
+                family: 4,
                 auth: {
                     user: process.env.GMAIL_USER,
                     pass: process.env.GMAIL_APP_PASSWORD
                 }
-            });
+            };
+            this.transporter = nodemailer_1.default.createTransport(smtpOptions);
         }
         return this.transporter;
     }

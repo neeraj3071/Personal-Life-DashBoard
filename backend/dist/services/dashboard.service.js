@@ -43,17 +43,13 @@ class DashboardService {
         };
     }
     async getOrCreateSettingsRecord(userId) {
-        const existing = await prisma_1.default.analyticsSettings.findUnique({
-            where: { userId }
-        });
-        if (existing) {
-            return existing;
-        }
-        return prisma_1.default.analyticsSettings.create({
-            data: {
+        return prisma_1.default.analyticsSettings.upsert({
+            where: { userId },
+            create: {
                 userId,
                 predictionModel: process.env.GEMINI_MODEL || 'gemini-2.0-flash'
-            }
+            },
+            update: {}
         });
     }
     async getSettings(userId) {
